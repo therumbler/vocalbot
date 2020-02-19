@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vocal Bot</title>
+</head>
+<body>
+    <h1>Vocal Bot</h1>
+    <form action="" onsubmit="sendMessage(event)">
+        <input type="text" id="messageText" autocomplete="off"/>
+        <button>Send</button>
+    </form>
+    <ul id='messages'><li></li></ul>
+<script>
+var getWebsocketAddress = function(){
+    var address = window.location.protocol === 'https:' ? 'wss://': 'ws://';
+    if (window.location.port){
+        address += window.location.host + '/ws/';
+    } else {
+        address += window.location.host + '/ws/';
+    }
+    return address;
+}
+var ws = new WebSocket(getWebsocketAddress());
+
+ws.onmessage = function(event) {
+    var tweet = JSON.parse(event.data);
+    calculateRate();
+    return;
+
+    displayTweet(tweet);
+};
+
+function sendMessage(event) {
+    event.preventDefault();
+    var input = document.getElementById("messageText");
+    ws.send(input.value);
+    return false;
+}
+</script>
+</body>
+</html>
