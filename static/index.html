@@ -2,36 +2,90 @@
 <html>
 <head>
     <title>Vocal Bot</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/annyang/1.6.0/annyang.min.js"></script>
+    <style>
+    #main {
+        max-width: 840px;
+        margin: auto;
+    }
+    body {
+        font-size: 1.7em;
+    }
+    </style>
+
 </head>
 <body>
+<div id="main">
     <h1>Vocal Bot</h1>
-    <form action="" onsubmit="sendMessage(event)">
-        <input type="text" id="messageText" autocomplete="off"/>
-        <button>Send</button>
-    </form>
-    <ul id='messages'><li></li></ul>
-<script>
-var getWebsocketAddress = function(){
-    var address = window.location.protocol === 'https:' ? 'wss://': 'ws://';
-    if (window.location.port){
-        address += window.location.host + '/ws/';
-    } else {
-        address += window.location.host + '/ws/';
+    <!--a href="./login">login</a>-->
+    <button id="start">start</button>
+    <div>You: <span id="you"></span></div>
+    <div>Benji: <span id="benji"></span>
+</div>
+    <script>
+async function sayit(text){
+    var audioUrl = 'chataudio?text=' + encodeURIComponent(text);
+    var audio = new Audio();
+    audio.setAttribute('src', audioUrl);
+    audio.play();
+    console.log(audio);
+    url = 'chat';
+    data = {
+        'text': text
     }
-    return address;
+    var resp = await fetch(url, {method:'POST', body: JSON.stringify(data)});
+    //var blob = new Blob(resp.blob());
+    //var audioUrl = URL.createObjectURL(resp.blob());
+    //console.log('audioUrl =', audioUrl);
+    //var audio = new Audio();
+    //audio.srcObject = await resp.blob();
+    //audio.play();
+    //console.log(audio)
+    data = await resp.json();
+    document.querySelector('#benji').innerHTML=data['that'];
+
 }
-var ws = new WebSocket(getWebsocketAddress());
+if(annyang){
+    var commands = {
+        '*term': function(term) {
+        console.log(term);
+        document.querySelector("#you").innerHTML=term;
+        sayit(term);
+        }
+    };
+
+    annyang.addCallback("error", function(){
+            $("#results").html( "It looks like your browser isn't supported");
+    });
+    // Add our commands to annyang
+    annyang.addCommands(commands);
+    annyang.start();
+} else {
+    document.querySelector("#benji").innerHTML = "it looks like your browser is not supported";
+}
+var getWebsocketAddress = function(){
+var address = window.location.protocol === 'https:' ? 'wss://': 'ws://';
+if (window.location.port){
+    address += window.location.host + '/ws/';
+} else {
+    address += window.location.host + '/ws/';
+}
+return address;
+}
+//var ws = new WebSocket(getWebsocketAddress());
+var ws = {}
 
 ws.onmessage = function(event) {
-    var tweet = JSON.parse(event.data);
-    calculateRate();
-    return;
+var tweet = JSON.parse(event.data);
+calculateRate();
+return;
 
-    displayTweet(tweet);
+displayTweet(tweet);
 };
 
 function sendMessage(event) {
-    event.preventDefault();
+event.preventDefault();
     var input = document.getElementById("messageText");
     ws.send(input.value);
     return false;
