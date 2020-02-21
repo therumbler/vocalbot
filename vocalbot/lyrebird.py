@@ -31,7 +31,6 @@ def get_login_url(scope):
         'state': _get_random(),
     }
 
-    logger.info('params = %s', params)
     return f'https://myvoice.lyrebird.ai/authorize?{urlencode(params)}'
 
 async def _call(client: httpx.AsyncClient, endpoint, method='GET', **params):
@@ -43,7 +42,6 @@ async def _call(client: httpx.AsyncClient, endpoint, method='GET', **params):
     #url = f'https://beta.myvoice.lyrebird.ai/api/v0/{endpoint}'
 
     logger.info('%s %s', method, url)
-    logger.info('headers = %s', headers)
     if method == 'GET':
         resp = await coro(url, headers=headers, params=params)
     else:
